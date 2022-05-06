@@ -46,7 +46,16 @@ const App = () => {
   }
 
   //Toggle Reminder
-  const toggleReminder = (id) => {
+  const toggleReminder = async(event) => {
+    const id = event.id
+    await fetch(`http://localhost:8000/reminder/${id}`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(event),
+    })
+    console.log(JSON.stringify(event))
     setEvents(events.map((event) => event.id === id
     ? { ...event, reminder: !event.reminder} : event))
 
@@ -54,7 +63,7 @@ const App = () => {
 
   return (
     <div className="container">
-      <Header onAdd={() => setShowAddEvent(!showAddEvent)}/>
+      <Header onAdd={() => setShowAddEvent(!showAddEvent)} test={showAddEvent}/>
       {showAddEvent && <AddEvent onAdd={addEvent}/>}
       {events.length !== 0 ? 
         <Events events={events} onDelete={deleteEvent} onToggle={toggleReminder}/> : <h3>Nothing to show</h3>

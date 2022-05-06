@@ -16,7 +16,5 @@ class Event(models.Model):
     def __str__(self):
         return self.text
 
-    def get_all(this):
-        return {"text":this.text, "date":this.date, "reminder":this.reminder}
 
 

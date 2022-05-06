@@ -1,14 +1,12 @@
-import json
 from .models import Events, Event
 from rest_framework.decorators import api_view, parser_classes
 from rest_framework.response import Response
 from rest_framework.parsers import JSONParser
-from main.serializers import EventSerializer, EventsSerializer
+from main.serializers import EventSerializer
 
 
 @api_view(['GET', 'DELETE'])
 def index(request, id):
-
     ev = Events.objects.get(id=id)
     ev = ev.event_set.all()
     ser = EventSerializer(ev, many=True)
@@ -27,4 +25,12 @@ def addEvent(request, id , format=None):
 def deleteEvent(request, id, format=None):
     ev = Events.objects.get(id=1)
     ev.event_set.get(id=id).delete()
+    return Response('200')
+
+@api_view(['POST'])
+@parser_classes([JSONParser])
+def toggleReminder(request, id, format=None):
+    ev = Event.objects.get(id=id)
+    ev.reminder = not request.data['reminder']
+    ev.save(update_fields=['reminder'])
     return Response('200')
