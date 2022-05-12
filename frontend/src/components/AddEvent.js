@@ -1,4 +1,5 @@
 import { useState } from "react"
+import CSRFToken from "./csrftoken"
 
 const AddEvent = ({ onAdd }) => {
   const [text, setText] = useState('')
@@ -22,6 +23,7 @@ const AddEvent = ({ onAdd }) => {
 
     return (
     <form className="add-form" onSubmit={onSubmit}>
+        <CSRFToken />
         <div className="form-control">
             <label>Event</label>
             <input 

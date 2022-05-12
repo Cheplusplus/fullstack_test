@@ -1,36 +1,44 @@
-from .models import Events, Event
-from rest_framework.decorators import api_view, parser_classes
+from main.serializers import UserSerializer
+from .models import Event
+from main.serializers import EventSerializer, UserSerializer
+from rest_framework import generics
 from rest_framework.response import Response
-from rest_framework.parsers import JSONParser
-from main.serializers import EventSerializer
+from rest_framework.decorators import api_view, permission_classes
+from django.contrib.auth.models import User
+from rest_framework.permissions  import IsAuthenticated, IsAdminUser
 
 
-@api_view(['GET', 'DELETE'])
-def index(request, id):
-    ev = Events.objects.get(id=id)
-    ev = ev.event_set.all()
-    ser = EventSerializer(ev, many=True)
-    return Response(ser.data)
+class UserList(generics.ListAPIView):
+    permission_classes = [IsAdminUser]
+    queryset = User.objects.all()
+    serializer_class = UserSerializer
 
+class UserDetail(generics.RetrieveAPIView):
+    permission_classes = [IsAdminUser]
+    queryset = User.objects.all()
+    serializer_class = UserSerializer
+
+
+class EventList(generics.ListCreateAPIView):
+    permission_classes = [IsAuthenticated]
+    queryset = Event.objects.all()
+    serializer_class = EventSerializer
+    def perform_create(self, serializer):
+        serializer.save(owner=self.request.user)
+    def get(self, request, format=None):
+        events = Event.objects.filter(owner=self.request.user)
+        serializer = EventSerializer(events, many=True)
+        return Response(serializer.data)
+
+class EventDetail(generics.RetrieveUpdateDestroyAPIView):
+    permission_classes = [IsAuthenticated]
+    queryset = Event.objects.all()
+    serializer_class = EventSerializer
+    
 @api_view(['POST'])
-@parser_classes([JSONParser])
-def addEvent(request, id , format=None):
-    ev = Events.objects.get(id=id)
-    print(request.data)
-    ev.event_set.create(text=request.data['text'], date=request.data['date'], reminder=request.data['reminder'])
-    return Response('200')
-
-@api_view(['DELETE'])
-@parser_classes([JSONParser])
-def deleteEvent(request, id, format=None):
-    ev = Events.objects.get(id=1)
-    ev.event_set.get(id=id).delete()
-    return Response('200')
-
-@api_view(['POST'])
-@parser_classes([JSONParser])
-def toggleReminder(request, id, format=None):
-    ev = Event.objects.get(id=id)
+@permission_classes([IsAuthenticated])
+def toggleReminder(request, pk, format=None):
+    ev = Event.objects.get(id=pk)
     ev.reminder = not request.data['reminder']
     ev.save(update_fields=['reminder'])
     return Response('200')
