@@ -23,7 +23,6 @@ const AddEvent = ({ onAdd }) => {
 
     return (
     <form className="add-form" onSubmit={onSubmit}>
-        <CSRFToken />
         <div className="form-control">
             <label>Event</label>
             <input 
